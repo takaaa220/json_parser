@@ -1,0 +1,17 @@
+   {
+            "boolean": true,
+        "null": null,
+    "number":
+    123,
+
+
+    "object":
+              {
+       "array": [null,
+        2e10]
+     },
+     "string": "togatoga",
+
+         "utf16": "\uD83D\uDE04\uD83D\uDE07\uD83D\uDC7A"
+
+   }
