@@ -238,7 +238,7 @@ impl<'a> Lexer<'a> {
         }
 
         // 文字列の終端である '"' が存在しない場合はエラー
-        Err(LexerError::new(&"error: not close string"))
+        Ok(None)
     }
 
     /// utf16のバッファが存在するならば連結しておく
@@ -319,8 +319,8 @@ mod tests {
             assert_eq!(tokens[0], expect);
         });
 
-        let tokens = Lexer::new("\"hello world").tokenize();
-        assert!(tokens.is_err());
+        let tokens = Lexer::new("\"hello world").tokenize().unwrap();
+        assert_eq!(tokens.len(), 0);
     }
 
     #[test]
