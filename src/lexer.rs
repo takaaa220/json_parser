@@ -153,7 +153,23 @@ impl<'a> Lexer<'a> {
 
     /// 数字として使用可能な文字まで読み込む。読み込んだ文字列が数字(`f64`)としてParseに成功した場合Tokenを返す。
     fn parse_number_token(&mut self) -> Result<Option<Token>, LexerError> {
-        unimplemented!()
+        let mut number_str = String::new();
+
+        while let Some(&c) = self.chars.peek() {
+            // 数字に使われる可能性がある文字は読み込み、そうではない文字の場合は読み込みを終了する
+            if c.is_numeric() | matches!(c, '+' | '-' | 'e' | 'E' | '.') {
+                self.chars.next();
+                number_str.push(c);
+            } else {
+                break;
+            }
+        }
+
+        // 読み込んだ文字列がParseできた場合はTokenを返す
+        match number_str.parse::<f64>() {
+            Ok(number) => Ok(Some(Token::Number(number))),
+            Err(e) => Err(LexerError::new(&format!("error: {}", e.to_string()))),
+        }
     }
 
     /// 終端文字'\"'まで文字列を読み込む。UTF-16(\u0000~\uFFFF)や特殊なエスケープ文字(e.g. '\t','\n')も考慮する
@@ -187,5 +203,24 @@ mod tests {
         let true_str: &str = "true";
         let tokens = Lexer::new(true_str).tokenize().unwrap();
         assert_eq!(tokens[0], Token::Bool(true));
+    }
+
+    #[test]
+    fn test_number() {
+        let number_strs = [
+            ("3", Token::Number(3.0)),
+            ("+3", Token::Number(3.0)),
+            ("-3", Token::Number(-3.0)),
+            ("1e3", Token::Number(1000.0)),
+            ("0.3", Token::Number(0.3)),
+            (".3", Token::Number(0.3)),
+        ];
+        number_strs.map(|(input, expect)| {
+            let tokens = Lexer::new(input).tokenize().unwrap();
+            assert_eq!(tokens[0], expect);
+        });
+
+        let tokens = Lexer::new("+-3").tokenize();
+        assert!(tokens.is_err());
     }
 }
